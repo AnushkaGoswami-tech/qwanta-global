@@ -3,7 +3,7 @@ declare(strict_types=1);
 require dirname(__DIR__,2).'/app/db.php';
 header('Cache-Control: no-store');header('X-Robots-Tag: noindex, nofollow');header('X-Frame-Options: DENY');header('X-Content-Type-Options: nosniff');header("Content-Security-Policy: default-src 'self'; img-src 'self' https://upload.wikimedia.org data:; style-src 'self' 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
 ini_set('session.use_strict_mode','1');session_set_cookie_params(['lifetime'=>0,'path'=>'/admin/','secure'=>true,'httponly'=>true,'samesite'=>'Strict']);session_start();
-$_SESSION['csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['csrf'];$password=getenv('QWANTA_ADMIN_PASSWORD')?:'';$ready=strlen($password)>=16&&getenv('DATABASE_URL');$error='';$message='';
+$_SESSION['csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['csrf'];$password=getenv('QWANTA_ADMIN_PASSWORD')?:'';$ready=strlen($password)>=16&&getenv('DATABASE_URL');if(!$ready){error_log('Qwanta admin configuration: password='.(strlen($password)>=16?'valid':($password===''?'missing':'too short')).'; database_url='.(getenv('DATABASE_URL')?'present':'missing'));}$error='';$message='';
 $logged=isset($_SESSION['admin'],$_SESSION['last'])&&hash_equals(hash('sha256',$password),$_SESSION['admin'])&&time()-$_SESSION['last']<3600;
 if($logged)$_SESSION['last']=time();
 function field(string $key,int $max,bool $required=false): string{$v=$_POST[$key]??'';if(!is_string($v))throw new RuntimeException('Invalid input');$v=trim($v);if(strlen($v)>$max||($required&&$v===''))throw new RuntimeException('Check required fields and length limits');return $v;}
