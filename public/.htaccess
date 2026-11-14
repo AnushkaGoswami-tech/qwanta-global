@@ -1,0 +1,8 @@
+DirectoryIndex index.php
+Options -Indexes
+RewriteEngine On
+RewriteRule ^(?:index\.html|products\.html|product\.html)?$ catalogue.php [L]
+RewriteRule ^admin$ admin/ [R=308,L]
+<FilesMatch "^(\.env|.*\.sql|.*\.log|.*\.bak)$">
+Require all denied
+</FilesMatch>
