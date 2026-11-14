@@ -3,13 +3,18 @@ declare(strict_types=1);
 require dirname(__DIR__,2).'/app/db.php';
 header('Cache-Control: no-store');header('X-Robots-Tag: noindex, nofollow');header('X-Frame-Options: DENY');header('X-Content-Type-Options: nosniff');header("Content-Security-Policy: default-src 'self'; img-src 'self' https://upload.wikimedia.org data:; style-src 'self' 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
 ini_set('session.use_strict_mode','1');session_set_cookie_params(['lifetime'=>0,'path'=>'/admin/','secure'=>true,'httponly'=>true,'samesite'=>'Strict']);session_start();
-$_SESSION['csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['csrf'];$password=getenv('QWANTA_ADMIN_PASSWORD')?:'';$ready=strlen($password)>=16&&getenv('DATABASE_URL');if(!$ready){error_log('Qwanta admin configuration: password='.(strlen($password)>=16?'valid':($password===''?'missing':'too short')).'; database_url='.(getenv('DATABASE_URL')?'present':'missing'));}$error='';$message='';
+$_SESSION['csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['csrf'];$password=getenv('QWANTA_ADMIN_PASSWORD')?:'';$ready=strlen($password)>=16&&getenv('DATABASE_URL');if(!$ready){error_log('Qwanta admin configuration: password='.(strlen($password)>=16?'valid':($password===''?'missing':'too short')).'; database_url='.(getenv('DATABASE_URL')?'present':'missing'));}$error=(string)($_SESSION['notice']??'');unset($_SESSION['notice']);$message='';
 $logged=isset($_SESSION['admin'],$_SESSION['last'])&&hash_equals(hash('sha256',$password),$_SESSION['admin'])&&time()-$_SESSION['last']<3600;
 if($logged)$_SESSION['last']=time();
 function field(string $key,int $max,bool $required=false): string{$v=$_POST[$key]??'';if(!is_string($v))throw new RuntimeException('Invalid input');$v=trim($v);if(strlen($v)>$max||($required&&$v===''))throw new RuntimeException('Check required fields and length limits');return $v;}
 function redirect(string $query=''): never{header('Location: /admin/'.$query, true,303);exit;}
 if($_SERVER['REQUEST_METHOD']==='POST'){
- if(!is_string($_POST['csrf']??null)||!hash_equals($csrf,$_POST['csrf'])){http_response_code(403);exit('Invalid request');}
+ if(!is_string($_POST['csrf']??null)||!hash_equals($csrf,$_POST['csrf'])){
+ $oversize=empty($_POST)&&empty($_FILES)&&(int)($_SERVER['CONTENT_LENGTH']??0)>8388608;
+ error_log('Qwanta admin form rejected: '.($oversize?'request too large':'session token missing or expired'));
+ $_SESSION['notice']=$oversize?'The upload was too large. Please choose a JPG, PNG or WebP image under 2 MB.':'Your form session expired or the website was restarted. Please sign in again if needed and retry. No changes were saved.';
+ header('Location: /admin/?tab=products',true,303);exit;
+ }
  $action=$_POST['action']??'';
  if($action==='logout'){session_destroy();redirect();}
  if($ready){
@@ -21,7 +26,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
  if(!hash_equals($password,field('password',512,true)))throw new RuntimeException('Incorrect password.');
  session_regenerate_id(true);$_SESSION['admin']=hash('sha256',$password);$_SESSION['last']=$now;$_SESSION['csrf']=bin2hex(random_bytes(32));redirect();
  }
- if(!$logged){http_response_code(403);exit('Unauthorized');}
+ if(!$logged){$_SESSION['notice']='Your login session expired. Please sign in again and retry. No changes were saved.';redirect();}
  if($action==='category'){$name=field('category',80,true);if(strcasecmp($name,'All products')===0)throw new RuntimeException('This category name is reserved.');$db->prepare('INSERT INTO q_categories VALUES (?) ON CONFLICT DO NOTHING')->execute([$name]);redirect('?tab=categories&saved=1');}
  if($action==='save'){
  $id=filter_var($_POST['id']??'',FILTER_VALIDATE_INT);$name=field('name',100,true);if(strcasecmp($name,'Other product')===0)throw new RuntimeException('This name is reserved.');
