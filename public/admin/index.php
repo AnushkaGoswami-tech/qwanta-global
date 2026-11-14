@@ -22,7 +22,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
  session_regenerate_id(true);$_SESSION['admin']=hash('sha256',$password);$_SESSION['last']=$now;$_SESSION['csrf']=bin2hex(random_bytes(32));redirect();
  }
  if(!$logged){http_response_code(403);exit('Unauthorized');}
- if($action==='category'){$name=field('category',80,true);$db->prepare('INSERT INTO q_categories VALUES (?) ON CONFLICT DO NOTHING')->execute([$name]);redirect('?tab=categories&saved=1');}
+ if($action==='category'){$name=field('category',80,true);if(strcasecmp($name,'All products')===0)throw new RuntimeException('This category name is reserved.');$db->prepare('INSERT INTO q_categories VALUES (?) ON CONFLICT DO NOTHING')->execute([$name]);redirect('?tab=categories&saved=1');}
  if($action==='save'){
  $id=filter_var($_POST['id']??'',FILTER_VALIDATE_INT);$name=field('name',100,true);if(strcasecmp($name,'Other product')===0)throw new RuntimeException('This name is reserved.');
  $category=field('category',80,true);$description=field('description',600,true);$spec=field('specifications',600);
