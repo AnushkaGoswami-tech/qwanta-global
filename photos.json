@@ -1,0 +1,83 @@
+[
+  {
+    "file": "GREEN_BANANA.jpg",
+    "author": "Ranjithkumar Murugesan",
+    "license": "CC0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:GREEN_BANANA.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/4a/GREEN_BANANA.jpg",
+    "local": "images/product-1.jpg"
+  },
+  {
+    "file": "Fresh_-_yellow_bananas.jpg",
+    "author": "Re-sendings",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Fresh_-_yellow_bananas.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Fresh_-_yellow_bananas.jpg",
+    "local": "images/product-2.jpg"
+  },
+  {
+    "file": "Plantain_banana_powder.jpg",
+    "author": "Vis M",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Plantain_banana_powder.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d7/Plantain_banana_powder.jpg",
+    "local": "images/product-3.jpg"
+  },
+  {
+    "file": "Bowl_of_raw_rice_01.jpg",
+    "author": "Obasi Ogbeyialu Precious",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Bowl_of_raw_rice_01.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Bowl_of_raw_rice_01.jpg",
+    "local": "images/product-4.jpg"
+  },
+  {
+    "file": "Red_Onions.jpg",
+    "author": "Gaurav Dhwaj Khadka",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Red_Onions.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Red_Onions.jpg",
+    "local": "images/product-5.jpg"
+  },
+  {
+    "file": "Condimente.jpg",
+    "author": "MagdaBarascu",
+    "license": "CC0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Condimente.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Condimente.jpg",
+    "local": "images/product-6.jpg"
+  },
+  {
+    "file": "Red_lentils_(1).jpg",
+    "author": "Fumikas Sagisavas",
+    "license": "CC0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Red_lentils_%281%29.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Red_lentils_%281%29.jpg",
+    "local": "images/product-7.jpg"
+  },
+  {
+    "file": "Peanuts_(shelled_raw_marketed).jpg",
+    "author": "David E Mead",
+    "license": "CC0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Peanuts_%28shelled_raw_marketed%29.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/df/Peanuts_%28shelled_raw_marketed%29.jpg",
+    "local": "images/product-8.jpg"
+  },
+  {
+    "file": "Joint_venture_dehydrated_dried_vegetables.jpg",
+    "author": "Fumikas Sagisavas",
+    "license": "CC0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Joint_venture_dehydrated_dried_vegetables.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/7d/Joint_venture_dehydrated_dried_vegetables.jpg",
+    "local": "images/product-9.jpg"
+  }
+]
