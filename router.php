@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 $path=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
+if($path==='/enquiry.php'&&!getenv('DATABASE_URL')){require __DIR__.'/app/legacy-enquiry.php';return true;}
+if($path==='/admin'){header('Location: /admin/',true,308);return true;}
 if(!in_array($path,['/','/index.html','/products.html','/product.html'],true))return false;
 $file=__DIR__.'/public/'.($path==='/'?'index.html':basename($path));
 $html=file_get_contents($file);
