@@ -3,7 +3,7 @@ declare(strict_types=1);
 require dirname(__DIR__,2).'/app/db.php';
 header('Cache-Control: no-store');header('X-Robots-Tag: noindex, nofollow');header('X-Frame-Options: DENY');header('X-Content-Type-Options: nosniff');header("Content-Security-Policy: default-src 'self'; img-src 'self' https://upload.wikimedia.org data:; style-src 'self' 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
 ini_set('session.use_strict_mode','1');session_set_cookie_params(['lifetime'=>0,'path'=>'/admin/','secure'=>true,'httponly'=>true,'samesite'=>'Strict']);session_start();
-$_SESSION['csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['csrf'];$password=getenv('QWANTA_ADMIN_PASSWORD')?:'';$ready=strlen($password)>=16&&getenv('DATABASE_URL');if(!$ready){error_log('Qwanta admin configuration: password='.(strlen($password)>=16?'valid':($password===''?'missing':'too short')).'; database_url='.(getenv('DATABASE_URL')?'present':'missing'));}$error=(string)($_SESSION['notice']??'');unset($_SESSION['notice']);$message='';
+$_SESSION['csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['csrf'];$password=config('QWANTA_ADMIN_PASSWORD')?:'';$ready=strlen($password)>=16&&dbConfigured();if(!$ready){error_log('Qwanta admin configuration: password='.(strlen($password)>=16?'valid':($password===''?'missing':'too short')).'; database_url='.(dbConfigured()?'present':'missing'));}$error=(string)($_SESSION['notice']??'');unset($_SESSION['notice']);$message='';
 $logged=isset($_SESSION['admin'],$_SESSION['last'])&&hash_equals(hash('sha256',$password),$_SESSION['admin'])&&time()-$_SESSION['last']<3600;
 if($logged)$_SESSION['last']=time();
 function field(string $key,int $max,bool $required=false): string{$v=$_POST[$key]??'';if(!is_string($v))throw new RuntimeException('Invalid input');$v=trim($v);if(strlen($v)>$max||($required&&$v===''))throw new RuntimeException('Check required fields and length limits');return $v;}
@@ -21,20 +21,20 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
  try{
  $db=db();
  if($action==='login'){
- $ip=iphash();$now=time();$db->beginTransaction();$db->exec('SELECT pg_advisory_xact_lock(784827)');$db->prepare('DELETE FROM q_login_attempts WHERE created<?')->execute([$now-900]);$q=$db->prepare('SELECT COUNT(*) FROM q_login_attempts WHERE iphash=?');$q->execute([$ip]);if((int)$q->fetchColumn()>=8){$db->rollBack();throw new RuntimeException('Too many attempts. Try again later.');}
- $db->prepare('INSERT INTO q_login_attempts VALUES (?,?)')->execute([$ip,$now]);$db->commit();
+ $ip=iphash();$now=time();$db->beginTransaction();lock($db,784827);$db->prepare('DELETE FROM q_login_attempts WHERE created<?')->execute([$now-900]);$q=$db->prepare('SELECT COUNT(*) FROM q_login_attempts WHERE iphash=?');$q->execute([$ip]);if((int)$q->fetchColumn()>=8){$db->rollBack();unlock($db,784827);throw new RuntimeException('Too many attempts. Try again later.');}
+ $db->prepare('INSERT INTO q_login_attempts VALUES (?,?)')->execute([$ip,$now]);$db->commit();unlock($db,784827);
  if(!hash_equals($password,field('password',512,true)))throw new RuntimeException('Incorrect password.');
  session_regenerate_id(true);$_SESSION['admin']=hash('sha256',$password);$_SESSION['last']=$now;$_SESSION['csrf']=bin2hex(random_bytes(32));redirect();
  }
  if(!$logged){$_SESSION['notice']='Your login session expired. Please sign in again and retry. No changes were saved.';redirect();}
- if($action==='category'){$name=field('category',80,true);if(strcasecmp($name,'All products')===0)throw new RuntimeException('This category name is reserved.');$db->prepare('INSERT INTO q_categories VALUES (?) ON CONFLICT DO NOTHING')->execute([$name]);redirect('?tab=categories&saved=1');}
+ if($action==='category'){$name=field('category',80,true);if(strcasecmp($name,'All products')===0)throw new RuntimeException('This category name is reserved.');$db->prepare('INSERT INTO q_categories (name) VALUES (?) ON DUPLICATE KEY UPDATE name=name')->execute([$name]);redirect('?tab=categories&saved=1');}
  if($action==='save'){
  $id=filter_var($_POST['id']??'',FILTER_VALIDATE_INT);$name=field('name',100,true);if(strcasecmp($name,'Other product')===0)throw new RuntimeException('This name is reserved.');
  $category=field('category',80,true);$description=field('description',600,true);$spec=field('specifications',600);
- $fields=[$name,$category,$description,$spec,field('origin',100),field('packaging',300),field('moq',100),field('lead_time',100),field('price',100),field('availability',150),isset($_POST['published'])?'true':'false',isset($_POST['featured'])?'true':'false'];
+ $fields=[$name,$category,$description,$spec,field('origin',100),field('packaging',300),field('moq',100),field('lead_time',100),field('price',100),field('availability',150),isset($_POST['published'])?1:0,isset($_POST['featured'])?1:0];
  $db->beginTransaction();
- if($id!==false){$q=$db->prepare('UPDATE q_products SET name=?,category=?,description=?,specifications=?,origin=?,packaging=?,moq=?,lead_time=?,price=?,availability=?,published=?,featured=? WHERE id=?');$q->execute([...$fields,$id]);if(!$q->rowCount())throw new RuntimeException('Product not found');}
- else{$q=$db->prepare('INSERT INTO q_products(name,category,description,specifications,origin,packaging,moq,lead_time,price,availability,published,featured) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id');$q->execute($fields);$id=(int)$q->fetchColumn();}
+ if($id!==false){$q=$db->prepare('UPDATE q_products SET name=?,category=?,description=?,specifications=?,origin=?,packaging=?,moq=?,lead_time=?,price=?,availability=?,published=?,featured=? WHERE id=?');$q->execute([...$fields,$id]);if(!$q->rowCount()){$check=$db->prepare('SELECT id FROM q_products WHERE id=?');$check->execute([$id]);if($check->fetchColumn()===false)throw new RuntimeException('Product not found');}}
+ else{$q=$db->prepare('INSERT INTO q_products(name,category,description,specifications,origin,packaging,moq,lead_time,price,availability,published,featured) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');$q->execute($fields);$id=(int)$db->lastInsertId();}
  if(isset($_FILES['image'])&&$_FILES['image']['error']!==UPLOAD_ERR_NO_FILE){$f=$_FILES['image'];if($f['error']!==UPLOAD_ERR_OK||$f['size']>2097152||!is_uploaded_file($f['tmp_name']))throw new RuntimeException('Upload a JPG, PNG or WebP image under 2 MB.');
  $info=@getimagesize($f['tmp_name']);$mime=$info['mime']??'';if(!in_array($mime,['image/jpeg','image/png','image/webp'],true)||$info[0]*$info[1]>16000000)throw new RuntimeException('Unsupported image or dimensions.');
  $db->prepare("UPDATE q_products SET image_data=?,image_mime=?,local='',url='',source='',author='',license='' WHERE id=?")->execute([base64_encode(file_get_contents($f['tmp_name'])),$mime,$id]);}
