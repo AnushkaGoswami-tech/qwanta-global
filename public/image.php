@@ -1,0 +1,3 @@
+<?php
+declare(strict_types=1);require dirname(__DIR__).'/app/db.php';
+try{$id=filter_input(INPUT_GET,'id',FILTER_VALIDATE_INT);if($id===false||$id===null)throw new Exception();$q=db()->prepare('SELECT image_data,image_mime FROM q_products WHERE id=? AND published');$q->execute([$id]);$r=$q->fetch();if(!$r||!$r['image_data']||!in_array($r['image_mime'],['image/jpeg','image/png','image/webp'],true))throw new Exception();header('Content-Type: '.$r['image_mime']);header('X-Content-Type-Options: nosniff');header('Cache-Control: no-cache');echo base64_decode($r['image_data'],true);}catch(Throwable $e){http_response_code(404);}
