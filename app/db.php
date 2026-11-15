@@ -33,3 +33,14 @@ function lock(PDO $db,int $id): void {
 function unlock(PDO $db,int $id): void {
  $q=$db->prepare('SELECT RELEASE_LOCK(?)');$q->execute(['qwanta-'.$id]);
 }
+
+/* Homepage totals are independent of catalogue data. Missing table means a new installation. */
+function impact(PDO $db): array {
+ try{$r=$db->query('SELECT shipments,revenue_inr FROM q_impact WHERE id=1')->fetch();}
+ catch(PDOException $e){if((string)$e->getCode()!=='42S02')throw $e;$r=false;}
+ return ['shipments'=>(int)($r['shipments']??0),'revenue_inr'=>(int)($r['revenue_inr']??0)];
+}
+function saveImpact(PDO $db,int $shipments,int $revenue): void {
+ $db->exec('CREATE TABLE IF NOT EXISTS q_impact (id TINYINT PRIMARY KEY, shipments BIGINT UNSIGNED NOT NULL DEFAULT 0, revenue_inr BIGINT UNSIGNED NOT NULL DEFAULT 0) ENGINE=InnoDB');
+ $db->prepare('INSERT INTO q_impact(id,shipments,revenue_inr) VALUES (1,?,?) ON DUPLICATE KEY UPDATE shipments=VALUES(shipments),revenue_inr=VALUES(revenue_inr)')->execute([$shipments,$revenue]);
+}
