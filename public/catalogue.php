@@ -18,4 +18,4 @@ $reason=match(true){
  $e instanceof PDOException=>'DATABASE_SQLSTATE_'.preg_replace('/[^A-Z0-9]/i','',(string)$e->getCode()).'_DRIVER_'.(int)($e->errorInfo[1]??0),
  default=>'APPLICATION_'.get_class($e)
 };
-error_log('Qwanta catalogue diagnostic: '.$reason);http_response_code(503);echo '<h1>Temporarily unavailable</h1><p>Please contact mraj7848@gmail.com.</p>';}
+error_log('Qwanta catalogue diagnostic: '.$reason);http_response_code(503);echo '<h1>Temporarily unavailable</h1><p>Please contact abhishek@qwantaglobal.com.</p>';}
