@@ -11,7 +11,7 @@ function notifyOwner(string $ref,array $d): void {
  $labels=['name'=>'Buyer','company'=>'Company','email'=>'Business email','product'=>'Product','quantity'=>'Quantity','destination'=>'Destination','requirements'=>'Additional requirements','incoterm'=>'Trade terms'];
  $lines=["New export enquiry — ".$ref,""];
  foreach($labels as $k=>$label)$lines[]=$label.': '.($d[$k]?:'Not specified');
- $lines[]="\nManage enquiry: https://qwanta-global.onrender.com/admin/?tab=enquiries";
+ $lines[]="\nManage enquiry: https://qwantaglobal.com/admin/?tab=enquiries";
  $payload=json_encode(['from'=>$from,'to'=>[$to],'subject'=>'New Qwanta buyer enquiry | '.$ref,'text'=>implode("\n",$lines),'reply_to'=>$d['email']],JSON_THROW_ON_ERROR);
  $ctx=stream_context_create(['http'=>['method'=>'POST','header'=>"Authorization: Bearer ".$key."\r\nContent-Type: application/json\r\nIdempotency-Key: ".$ref."\r\n",'content'=>$payload,'timeout'=>8,'ignore_errors'=>true,'follow_location'=>0]]);
  $response=@file_get_contents('https://api.resend.com/emails',false,$ctx);
