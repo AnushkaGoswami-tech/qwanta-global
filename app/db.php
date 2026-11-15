@@ -4,7 +4,7 @@ declare(strict_types=1);
 function config(string $key): string {
  static $local=null;
  if($local===null){
- $path=dirname(__DIR__).'/qwanta-config.php';
+ $path=dirname(__DIR__,2).'/qwanta-config.php';
  $local=is_file($path)?require $path:[];
  if(!is_array($local))throw new RuntimeException('Invalid configuration');
  }
