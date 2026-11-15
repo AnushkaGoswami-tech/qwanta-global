@@ -7,6 +7,7 @@ if($name===''||$name==='/')$name='index.html';
 if(!in_array($name,['index.html','products.html','product.html'],true)){http_response_code(404);exit('Not found');}
 try{$rows=products(db());$html=file_get_contents(__DIR__.'/'.$name);$payload=json_encode($rows,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR);
 $html=preg_replace_callback('/<script>/',fn($m)=>'<script>window.QWANTA_CATALOGUE='.$payload.';</script><script>',$html,1);
+if($name==='index.html'){try{$totals=impact(db());$html=str_replace(['data-impact="shipments">0','data-impact="revenue">₹0'],['data-impact="shipments">'.number_format($totals['shipments']),'data-impact="revenue">₹'.number_format($totals['revenue_inr'])],$html);}catch(Throwable $e){error_log('Qwanta impact unavailable');}}
 header('Content-Type: text/html; charset=utf-8');header('Cache-Control: no-cache');echo $html;
 }catch(Throwable $e){$configPath=dirname(__DIR__,2).'/qwanta-config.php';
 $reason=match(true){
