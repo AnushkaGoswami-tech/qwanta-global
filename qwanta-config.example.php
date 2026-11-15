@@ -10,5 +10,5 @@ return [
  'QWANTA_RATE_SECRET'=>'', // random 32+ characters
  'RESEND_API_KEY'=>'',
  'QWANTA_FROM_EMAIL'=>'Qwanta Enquiries <onboarding@resend.dev>',
- 'QWANTA_NOTIFY_EMAIL'=>'mraj7848@gmail.com',
+ 'QWANTA_NOTIFY_EMAIL'=>'abhishek@qwantaglobal.com',
 ];
