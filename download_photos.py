@@ -4,7 +4,7 @@ root=pathlib.Path(__file__).resolve().parent
 photos=json.loads((root/'photos.json').read_text())
 def get(p):
  target=root/'public'/p['local'];target.parent.mkdir(exist_ok=True)
- req=urllib.request.Request(p['url'],headers={'User-Agent':'QwantaGlobalSourcing/1.0 (mraj7848@gmail.com)'})
+ req=urllib.request.Request(p['url'],headers={'User-Agent':'QwantaGlobalSourcing/1.0 (abhishek@qwantaglobal.com)'})
  with urllib.request.urlopen(req,timeout=90) as r:
   content=r.read()
   if not content.startswith(b'\xff\xd8'):raise ValueError('Not JPEG '+p['file'])
