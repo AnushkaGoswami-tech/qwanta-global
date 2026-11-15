@@ -11,6 +11,7 @@ if(dbConfigured()){
  
  try{$rows=products(db());}
  catch(Throwable $e){error_log('Catalogue database unavailable');http_response_code(503);header('Content-Type: text/html; charset=utf-8');echo '<h1>Catalogue temporarily unavailable</h1><p>Please contact Qwanta directly at mraj7848@gmail.com.</p>';return true;}
+ if($path==='/'||$path==='/index.html'){try{$totals=impact(db());$html=str_replace(['data-impact="shipments">0','data-impact="revenue">₹0'],['data-impact="shipments">'.number_format($totals['shipments']),'data-impact="revenue">₹'.number_format($totals['revenue_inr'])],$html);}catch(Throwable $e){error_log('Qwanta impact unavailable');}}
  $payload=json_encode($rows,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR);
  $html=preg_replace_callback('/<script>/',fn($m)=>'<script>window.QWANTA_CATALOGUE='.$payload.';</script><script>', $html,1);
 }
