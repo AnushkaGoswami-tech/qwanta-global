@@ -29,3 +29,5 @@ CREATE TABLE q_enquiries (
  INDEX q_enquiry_ip(iphash,created)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 CREATE TABLE q_login_attempts (iphash CHAR(64) NOT NULL,created BIGINT NOT NULL,INDEX q_login_ip(iphash,created)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+CREATE TABLE IF NOT EXISTS q_impact (id TINYINT PRIMARY KEY, shipments BIGINT UNSIGNED NOT NULL DEFAULT 0, revenue_inr BIGINT UNSIGNED NOT NULL DEFAULT 0) ENGINE=InnoDB;
