@@ -7,7 +7,7 @@ function notifyOwner(string $ref,array $d): void {
  $key=config('RESEND_API_KEY');
  if(!$key){error_log('Qwanta email not configured');return;}
  $from=config('QWANTA_FROM_EMAIL')?:'Qwanta Enquiries <onboarding@resend.dev>';
- $to=config('QWANTA_NOTIFY_EMAIL')?:'abhishek@qwantaglobal.com';
+ $to='abhishek@qwantaglobal.com'; // Official inbox for website enquiries.
  $labels=['name'=>'Buyer','company'=>'Company','email'=>'Business email','product'=>'Product','quantity'=>'Quantity','destination'=>'Destination','requirements'=>'Additional requirements','incoterm'=>'Trade terms'];
  $lines=["New export enquiry — ".$ref,""];
  foreach($labels as $k=>$label)$lines[]=$label.': '.($d[$k]?:'Not specified');
