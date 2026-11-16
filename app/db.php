@@ -18,7 +18,7 @@ function db(): PDO {
  return $db;
 }
 function products(PDO $db,bool $all=false): array {
- $sql="SELECT id,name,category,description,specifications,origin,packaging,moq,lead_time,price,availability,published,featured,local,url,source,author,license,(image_data IS NOT NULL) AS has_image FROM q_products".($all?'':' WHERE published=1')." ORDER BY id";
+ $sql="SELECT id,name,category,description,specifications,origin,packaging,moq,lead_time,price,availability,published,featured,local,url,source,author,license,(image_data IS NOT NULL AND CHAR_LENGTH(image_data)>0) AS has_image,LEFT(SHA2(image_data,256),16) AS image_version FROM q_products".($all?'':' WHERE published=1')." ORDER BY id";
  return $db->query($sql)->fetchAll();
 }
 function esc(string|int|null $v): string{return htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
@@ -43,4 +43,18 @@ function impact(PDO $db): array {
 function saveImpact(PDO $db,int $shipments,int $revenue): void {
  $db->exec('CREATE TABLE IF NOT EXISTS q_impact (id TINYINT PRIMARY KEY, shipments BIGINT UNSIGNED NOT NULL DEFAULT 0, revenue_inr BIGINT UNSIGNED NOT NULL DEFAULT 0) ENGINE=InnoDB');
  $db->prepare('INSERT INTO q_impact(id,shipments,revenue_inr) VALUES (1,?,?) ON DUPLICATE KEY UPDATE shipments=VALUES(shipments),revenue_inr=VALUES(revenue_inr)')->execute([$shipments,$revenue]);
+}
+
+/* Validate stored images before serving or accepting an upload. */
+function checkedImage(string $bytes): array {
+ if($bytes===''||strlen($bytes)>2097152)throw new RuntimeException('Upload a JPG, PNG or WebP image under 2 MB.');
+ $info=@getimagesizefromstring($bytes);$mime=$info['mime']??'';
+ if(!$info||!in_array($mime,['image/jpeg','image/png','image/webp'],true)||$info[0]*$info[1]>16000000)throw new RuntimeException('Invalid or unsupported product photograph.');
+ if(function_exists('imagecreatefromstring')){$im=@imagecreatefromstring($bytes);if(!$im)throw new RuntimeException('The image file is damaged. Export it again as JPG or PNG.');imagedestroy($im);}
+ return [$bytes,$mime];
+}
+function storedImage(string $data): array {
+ $bytes=base64_decode($data,true);
+ if($bytes===false)throw new RuntimeException('Invalid stored image.');
+ return checkedImage($bytes);
 }
