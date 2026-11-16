@@ -46,15 +46,15 @@ function saveImpact(PDO $db,int $shipments,int $revenue): void {
 }
 
 /* Validate stored images before serving or accepting an upload. */
-function checkedImage(string $bytes): array {
+function checkedImage(string $bytes,bool $verifyPixels=true): array {
  if($bytes===''||strlen($bytes)>2097152)throw new RuntimeException('Upload a JPG, PNG or WebP image under 2 MB.');
  $info=@getimagesizefromstring($bytes);$mime=$info['mime']??'';
  if(!$info||!in_array($mime,['image/jpeg','image/png','image/webp'],true)||$info[0]*$info[1]>16000000)throw new RuntimeException('Invalid or unsupported product photograph.');
- if(function_exists('imagecreatefromstring')){$im=@imagecreatefromstring($bytes);if(!$im)throw new RuntimeException('The image file is damaged. Export it again as JPG or PNG.');imagedestroy($im);}
+ if($verifyPixels&&function_exists('imagecreatefromstring')&&function_exists('imagetypes')){$type=match($mime){'image/jpeg'=>IMG_JPG,'image/png'=>IMG_PNG,'image/webp'=>defined('IMG_WEBP')?IMG_WEBP:0};if($type&&(imagetypes()&$type)){$im=@imagecreatefromstring($bytes);if(!$im)throw new RuntimeException('The image file is damaged. Export it again as JPG or PNG.');imagedestroy($im);}}
  return [$bytes,$mime];
 }
 function storedImage(string $data): array {
  $bytes=base64_decode($data,true);
  if($bytes===false)throw new RuntimeException('Invalid stored image.');
- return checkedImage($bytes);
+ return checkedImage($bytes,false);
 }
