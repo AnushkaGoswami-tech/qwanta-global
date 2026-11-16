@@ -41,8 +41,12 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
  if($id!==false){$q=$db->prepare('UPDATE q_products SET name=?,category=?,description=?,specifications=?,origin=?,packaging=?,moq=?,lead_time=?,price=?,availability=?,published=?,featured=? WHERE id=?');$q->execute([...$fields,$id]);if(!$q->rowCount()){$check=$db->prepare('SELECT id FROM q_products WHERE id=?');$check->execute([$id]);if($check->fetchColumn()===false)throw new RuntimeException('Product not found');}}
  else{$q=$db->prepare('INSERT INTO q_products(name,category,description,specifications,origin,packaging,moq,lead_time,price,availability,published,featured) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');$q->execute($fields);$id=(int)$db->lastInsertId();}
  if(isset($_FILES['image'])&&$_FILES['image']['error']!==UPLOAD_ERR_NO_FILE){$f=$_FILES['image'];if($f['error']!==UPLOAD_ERR_OK||$f['size']>2097152||!is_uploaded_file($f['tmp_name']))throw new RuntimeException('Upload a JPG, PNG or WebP image under 2 MB.');
- $info=@getimagesize($f['tmp_name']);$mime=$info['mime']??'';if(!in_array($mime,['image/jpeg','image/png','image/webp'],true)||$info[0]*$info[1]>16000000)throw new RuntimeException('Unsupported image or dimensions.');
- $db->prepare("UPDATE q_products SET image_data=?,image_mime=?,local='',url='',source='',author='',license='' WHERE id=?")->execute([base64_encode(file_get_contents($f['tmp_name'])),$mime,$id]);}
+ $bytes=file_get_contents($f['tmp_name']);if($bytes===false)throw new RuntimeException('Could not read uploaded photograph.');
+ [$bytes,$mime]=checkedImage($bytes);$encoded=base64_encode($bytes);
+ $db->prepare("UPDATE q_products SET image_data=?,image_mime=?,local='',url='',source='',author='',license='' WHERE id=?")->execute([$encoded,$mime,$id]);
+ $verify=$db->prepare('SELECT image_data,image_mime FROM q_products WHERE id=?');$verify->execute([$id]);$saved=$verify->fetch();
+ if(!$saved||!hash_equals($encoded,(string)$saved['image_data'])||$saved['image_mime']!==$mime)throw new RuntimeException('Photograph could not be stored correctly. Your changes were not saved.');
+ }
  $db->commit();redirect('?tab=products&saved=1');
  }
  if($action==='visibility'||$action==='delete'){$id=filter_var($_POST['id']??'',FILTER_VALIDATE_INT);if($id===false)throw new RuntimeException('Invalid product');if($action==='delete'){if(($_POST['confirm']??'')!=='yes')throw new RuntimeException('Confirm deletion first.');$db->prepare('DELETE FROM q_products WHERE id=?')->execute([$id]);}else{$db->prepare('UPDATE q_products SET published=NOT published WHERE id=?')->execute([$id]);}redirect('?tab=products&saved=1');}
