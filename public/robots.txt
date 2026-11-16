@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /enquiry.php
+Sitemap: https://qwantaglobal.com/sitemap.xml
