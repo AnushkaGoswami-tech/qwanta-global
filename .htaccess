@@ -4,6 +4,8 @@ RewriteEngine On
 # Block hidden paths (including .git) and traversal-like requests.
 RewriteRule (^|/)\. - [F,END]
 # Public pages and API endpoints. The backend and migration folders are never mapped.
+RewriteRule ^robots\.txt$ public/robots.txt [END]
+RewriteRule ^sitemap\.xml$ public/sitemap.php [END]
 RewriteRule ^(?:index\.html|products\.html|product\.html)?$ public/catalogue.php [END]
 RewriteRule ^admin$ /admin/ [R=308,END]
 RewriteRule ^admin/(?:index\.php)?$ public/admin/index.php [END]
